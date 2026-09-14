@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class SquareSpawner : MonoBehaviour
 {
     public float squareSize = 2f;
-    Vector2 clickedPosition;
-    bool hasClicked = false;
+    //Vector2 clickedPosition;
+    //bool hasClicked = false;
+
+    List<Vector2> clickedPositions = new List<Vector2>();
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,18 +27,20 @@ public class SquareSpawner : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame) //To draw white square when mouse is clicked
         {
-            clickedPosition = worldPosition;
-            hasClicked = true;
+            clickedPositions.Add(worldPosition);
+            //hasClicked = true;
         }
 
         //White square drawing in clicked position
 
-        if (hasClicked)
+        for (int i = 0; i < clickedPositions.Count; i++)
         {
-            Vector2 clickedtopLeft = new Vector2(clickedPosition.x - squareSize / 2, clickedPosition.y + squareSize / 2);
-            Vector2 clickedtopRight = new Vector2(clickedPosition.x + squareSize / 2, clickedPosition.y + squareSize / 2);
-            Vector2 clickedbottomLeft = new Vector2(clickedPosition.x - squareSize / 2, clickedPosition.y - squareSize / 2);
-            Vector2 clickedbottomRight = new Vector2(clickedPosition.x + squareSize / 2, clickedPosition.y - squareSize / 2);
+            Vector2 currentPos = clickedPositions[i];
+
+            Vector2 clickedtopLeft = new Vector2(currentPos.x - squareSize / 2, currentPos.y + squareSize / 2);
+            Vector2 clickedtopRight = new Vector2(currentPos.x + squareSize / 2, currentPos.y + squareSize / 2);
+            Vector2 clickedbottomLeft = new Vector2(currentPos.x - squareSize / 2, currentPos.y - squareSize / 2);
+            Vector2 clickedbottomRight = new Vector2(currentPos.x + squareSize / 2, currentPos.y - squareSize / 2);
 
             Debug.DrawLine(clickedtopLeft, clickedtopRight, Color.white);
             Debug.DrawLine(clickedtopRight, clickedbottomRight, Color.white);
