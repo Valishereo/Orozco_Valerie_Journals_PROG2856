@@ -63,5 +63,19 @@ public class SquareSpawner : MonoBehaviour
         Debug.DrawLine(topRight, bottomRight, sTWhite);
         Debug.DrawLine(bottomRight, bottomLeft, sTWhite);
         Debug.DrawLine(bottomLeft, topLeft, sTWhite);
+
+        float scroll = Mouse.current.scroll.ReadValue().y;
+        squareSize += scroll * 0.1f; //Adjusting square size with mouse scroll
+
+        if (squareSize < 0.1f) //Preventing square size from going below 0.1
+        { 
+            squareSize = 0.1f;
+        }
+
+        if (squareSize > 6f) //Preventing square size from going above 6
+        {
+            squareSize = 6f;
+        }
+
     }
 }
