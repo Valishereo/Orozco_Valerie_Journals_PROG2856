@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     public Vector2 bombOffset;
     public float bombTrailSpacing;
     public int numberOfTrailBombs;
+    public float warpRatio;
 
     void Start()
     {
@@ -34,6 +35,11 @@ public class Player : MonoBehaviour
         if (Keyboard.current.rKey.wasPressedThisFrame) // It spawns a bomb at a random corner when R is pressed
         {
             SpawnBombOnRandomCorner(3f);
+        }
+
+        if (Keyboard.current.wKey.wasPressedThisFrame) // It warps the player towards the enemy when W is pressed
+        {
+            WarpPlayer(enemyTransform, warpRatio);
         }
     }
     public void SpawnBombAtOffSet(Vector3 inOffset)
@@ -78,6 +84,16 @@ public class Player : MonoBehaviour
         direction =NormalizeVector(direction);
         Vector3 offset = direction * inDistance; // Calculate the offset based on the distance and direction
         SpawnBombAtOffSet(offset); // Spawn the bomb at the calculated offset
+    }
+
+    public void WarpPlayer(Transform target, float ratio)
+    { 
+        if (ratio > 1)
+        {
+            ratio = 1;
+        }
+
+        transform.position = Vector3.Lerp(transform.position, target.position, ratio);
     }
 
     Vector2 NormalizeVector(Vector2 inVector)
