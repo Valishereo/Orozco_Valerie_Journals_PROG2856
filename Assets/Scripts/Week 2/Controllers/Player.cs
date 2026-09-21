@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     public float bombTrailSpacing;
     public int numberOfTrailBombs;
     public float warpRatio;
+    public float radarMaxRange; // Maximum range for the radar detection
 
     void Start()
     {
@@ -41,7 +42,10 @@ public class Player : MonoBehaviour
         {
             WarpPlayer(enemyTransform, warpRatio);
         }
+
+        DetectAsteroids(radarMaxRange, asteroidTransforms); 
     }
+
     public void SpawnBombAtOffSet(Vector3 inOffset)
     {
         Vector3 playerPos = transform.position;
@@ -86,14 +90,32 @@ public class Player : MonoBehaviour
         SpawnBombAtOffSet(offset); // Spawn the bomb at the calculated offset
     }
 
-    public void WarpPlayer(Transform target, float ratio)
+    public void WarpPlayer(Transform target, float ratio) 
     { 
-        if (ratio > 1)
+        if (ratio > 1) // Ensure the ratio does not exceed 1
         {
             ratio = 1;
         }
 
-        transform.position = Vector3.Lerp(transform.position, target.position, ratio);
+        transform.position = Vector3.Lerp(transform.position, target.position, ratio); // Move the player towards the target position based on the ratio
+    }
+
+    public void DetectAsteroids(float inMaxRange, List <Transform> inAsteroid)
+    {
+        for (int i = 0; i < inAsteroid.Count; i++) // Iterate through the list of asteroids
+        {
+            Transform asteroid = inAsteroid[i];
+            float distance = Vector3.Distance(transform.position, asteroid.position); // Calculate the distance between the player and the asteroid
+
+            if (distance <= inMaxRange) 
+            {
+                Vector3 direction = asteroid.position - transform.position;
+                direction = direction.normalized; 
+                Vector3 endPosition = transform.position + direction * 2.5f; // Calculate the end position for the raycast
+
+                Debug.DrawLine(transform.position, endPosition, Color.green); // Draw a green line to indicate the detection of the asteroid
+            }
+        }
     }
 
     Vector2 NormalizeVector(Vector2 inVector)
