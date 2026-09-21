@@ -7,6 +7,9 @@ public class Player : MonoBehaviour
     public Transform enemyTransform;
     public GameObject bombPrefab;
     public List<Transform> asteroidTransforms;
+    public Vector2 bombOffset;
+    public float bombTrailSpacing;
+    public int numberOfTrailBombs;
 
     void Start()
     {
@@ -20,15 +23,30 @@ public class Player : MonoBehaviour
     {
         if (Keyboard.current.bKey.wasPressedThisFrame)
             {
-            SpawnBombAtOffSet(Vector3.up);
+            SpawnBombAtOffSet(bombOffset); // Spawn a bomb at the specified offset from the player's position
             }
+
+        if (Keyboard.current.tKey.wasPressedThisFrame) // It spawns a trail of bombs behind the player when T is pressed
+        {
+            SpawnBombTrail(bombTrailSpacing, numberOfTrailBombs);
+        }
     }
-    void SpawnBombAtOffSet(Vector3 inOffset)
+    public void SpawnBombAtOffSet(Vector3 inOffset)
     {
         Vector3 playerPos = transform.position;
         Vector3 spawnPos = playerPos + inOffset;
 
         Instantiate(bombPrefab, spawnPos, Quaternion.identity);
+    }
+
+    public void SpawnBombTrail(float inBombSpacing, int inNumberOfBombs) 
+    {
+        for (int i = 1; i <= inNumberOfBombs; i++) // It start at 1 to avoid spawning a bomb at the player's position
+        {
+            float distance = inBombSpacing * i; // To calculate the distance for each bomb in the trail
+            Vector3 offset = -transform.up * distance; 
+            SpawnBombAtOffSet(offset);
+        }
     }
 
     Vector2 NormalizeVector(Vector2 inVector)
