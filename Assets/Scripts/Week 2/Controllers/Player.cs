@@ -12,12 +12,19 @@ public class Player : MonoBehaviour
     public int numberOfTrailBombs;
     public float warpRatio;
     public float radarMaxRange; // Maximum range for the radar detection
+    public float maxSpeed = 1f;
+    public float accelerationTime = 1f;
+
+    private float acceleration;
+    private Vector3 velocity;
 
     void Start()
     {
         Debug.Log(NormalizeVector(new Vector3(3, 4)));
         Debug.Log(NormalizeVector(new Vector3(-3, 4)));
         Debug.Log(NormalizeVector(new Vector3(1.5f, -3.5f)));
+
+        acceleration = maxSpeed / accelerationTime;
     }
 
     // Update is called once per frame
@@ -43,7 +50,37 @@ public class Player : MonoBehaviour
             WarpPlayer(enemyTransform, warpRatio);
         }
 
+        PlayerMovement();
+
         DetectAsteroids(radarMaxRange, asteroidTransforms); 
+    }
+
+   private void PlayerMovement()
+    {
+        if (Keyboard.current.upArrowKey.isPressed)
+        {
+            velocity += acceleration * Time.deltaTime * Vector3.up;
+        }
+
+        if (Keyboard.current.leftArrowKey.isPressed)
+        {
+            velocity += acceleration * Time.deltaTime * Vector3.left;
+        }
+
+        if (Keyboard.current.rightArrowKey.isPressed)
+        {
+            velocity += acceleration * Time.deltaTime * Vector3.right;
+        }
+
+        if (Keyboard.current.downArrowKey.isPressed)
+        {
+            velocity += acceleration * Time.deltaTime * Vector3.down;
+        }
+
+        velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
+        transform.position += velocity * Time.deltaTime;
+
+        Debug.Log(velocity.magnitude);
     }
 
     public void SpawnBombAtOffSet(Vector3 inOffset)
