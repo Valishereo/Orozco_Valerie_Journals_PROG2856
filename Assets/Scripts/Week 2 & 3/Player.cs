@@ -12,10 +12,12 @@ public class Player : MonoBehaviour
     public int numberOfTrailBombs;
     public float warpRatio;
     public float radarMaxRange; // Maximum range for the radar detection
-    public float maxSpeed = 1f;
+    public float maxSpeed = 2f;
     public float accelerationTime = 1f;
+    public float decelerationTime = 5f;
 
     private float acceleration;
+    private float deceleration;
     private Vector3 velocity;
 
     void Start()
@@ -25,6 +27,7 @@ public class Player : MonoBehaviour
         Debug.Log(NormalizeVector(new Vector3(1.5f, -3.5f)));
 
         acceleration = maxSpeed / accelerationTime;
+        deceleration = maxSpeed / decelerationTime;
     }
 
     // Update is called once per frame
@@ -57,24 +60,46 @@ public class Player : MonoBehaviour
 
    private void PlayerMovement()
     {
+        bool isMoving = false;
+
         if (Keyboard.current.upArrowKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.up;
+            isMoving = true;
         }
 
         if (Keyboard.current.leftArrowKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.left;
+            isMoving = true;
         }
 
         if (Keyboard.current.rightArrowKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.right;
+            isMoving = true;
         }
 
         if (Keyboard.current.downArrowKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.down;
+            isMoving = true;
+        }
+
+        if (!isMoving)
+        {
+           float decelerationThisFrame = deceleration * Time.deltaTime;
+
+            if (velocity.magnitude <= decelerationThisFrame)
+            {
+                velocity = Vector3.zero; // Stop the player completely if the velocity is less than or equal to the deceleration for this frame
+            }
+            else
+            {
+                velocity -= velocity.normalized * decelerationThisFrame; // Apply deceleration in the opposite direction of the current velocity
+            }
+
+            //velocity -= velocity.normalized * deceleration * Time.deltaTime;
         }
 
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
