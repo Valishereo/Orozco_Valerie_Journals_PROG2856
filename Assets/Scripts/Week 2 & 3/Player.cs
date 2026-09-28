@@ -60,7 +60,7 @@ public class Player : MonoBehaviour
 
    private void PlayerMovement()
     {
-        bool isMoving = false;
+        bool isMoving = false; // Flag to check if the player is moving
 
         if (Keyboard.current.upArrowKey.isPressed)
         {
@@ -86,13 +86,13 @@ public class Player : MonoBehaviour
             isMoving = true;
         }
 
-        if (!isMoving)
+        if (!isMoving) 
         {
            float decelerationThisFrame = deceleration * Time.deltaTime;
 
             if (velocity.magnitude <= decelerationThisFrame)
             {
-                velocity = Vector3.zero; // Stop the player completely if the velocity is less than or equal to the deceleration for this frame
+                velocity = Vector3.zero; // Stops the player completely if the velocity is less than or equal to the deceleration for this frame
             }
             else
             {
