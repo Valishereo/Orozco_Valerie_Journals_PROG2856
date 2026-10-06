@@ -15,6 +15,8 @@ public class Player : MonoBehaviour
     public float maxSpeed = 2f;
     public float accelerationTime = 1f;
     public float decelerationTime = 5f;
+    public float radarRadius = 5f; // Radius of the radar circle
+    public int radarCirclePoints = 12; // Number of points to draw the radar circle
 
     private float acceleration;
     private float deceleration;
@@ -55,7 +57,9 @@ public class Player : MonoBehaviour
 
         PlayerMovement();
 
-        DetectAsteroids(radarMaxRange, asteroidTransforms); 
+        DetectAsteroids(radarMaxRange, asteroidTransforms);
+
+        EnemyRadar(radarRadius, radarCirclePoints);
     }
 
    private void PlayerMovement()
@@ -180,6 +184,41 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void EnemyRadar(float radius, int circlePoints)
+    { 
+        float angleStep = 360f / circlePoints; // Calculate the angle step based on the number of points
+
+        float enemyDistance = Vector3.Distance(transform.position, enemyTransform.position); // Calculate the distance between the player and the enemy
+        Color radarColor = Color.green; // Default color for the radar circle
+
+        if (enemyDistance <= radius)
+        {
+            radarColor = Color.red;
+        }
+        
+        for (int i = 0; i < circlePoints; i++) 
+        {
+            float angle = i * angleStep; // Calculate the angle for the current point
+
+            float angleRadians = angle * Mathf.Deg2Rad; // Convert the angle to radians
+
+            float x = Mathf.Cos(angleRadians) * radius; 
+            float y = Mathf.Sin(angleRadians) * radius; 
+
+            Vector3 point = transform.position + new Vector3(x, y, 0); 
+
+            float nextAngle = (i + 1) * angleStep;
+            float nextAngleRadians = nextAngle * Mathf.Deg2Rad;
+
+            float nextX = Mathf.Cos(nextAngleRadians) * radius;
+            float nextY = Mathf.Sin(nextAngleRadians) * radius;
+
+            Vector3 nextPoint = transform.position + new Vector3(nextX, nextY, 0);
+
+            Debug.DrawLine(point, nextPoint, radarColor); 
+        }
+
+    }
     Vector2 NormalizeVector(Vector2 inVector)
     {
         float magnitude = inVector.magnitude;
