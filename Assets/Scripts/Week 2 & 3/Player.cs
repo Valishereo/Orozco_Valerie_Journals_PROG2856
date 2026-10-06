@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
     public Transform enemyTransform;
     public GameObject bombPrefab;
+    public GameObject powerupPrefab;
     public List<Transform> asteroidTransforms;
     public Vector2 bombOffset;
     public float bombTrailSpacing;
@@ -17,6 +18,8 @@ public class Player : MonoBehaviour
     public float decelerationTime = 5f;
     public float radarRadius = 5f; // Radius of the radar circle
     public int radarCirclePoints = 12; // Number of points to draw the radar circle
+    public float powerUpRadius = 3f; // Radius for spawning power-ups
+    public int numberOfPowerUps = 6; // Number of power-ups to spawn
 
     private float acceleration;
     private float deceleration;
@@ -55,11 +58,18 @@ public class Player : MonoBehaviour
             WarpPlayer(enemyTransform, warpRatio);
         }
 
+        if (Keyboard.current.pKey.wasPressedThisFrame) // It spawns power-ups in a circular pattern around the player when P is pressed
+        {
+            SpawnPowerUps(powerUpRadius, numberOfPowerUps);
+        }
+
         PlayerMovement();
 
         DetectAsteroids(radarMaxRange, asteroidTransforms);
 
         EnemyRadar(radarRadius, radarCirclePoints);
+
+        
     }
 
    private void PlayerMovement()
@@ -219,6 +229,26 @@ public class Player : MonoBehaviour
         }
 
     }
+
+    public void SpawnPowerUps(float radius, int numberOfPowerUps)
+    {
+        float angleStep = 360f / numberOfPowerUps; // Calculate the angle step based on the number of power-ups
+
+        for (int i = 0; i < numberOfPowerUps; i++)
+        {
+            float angle = i * angleStep; // Calculate the angle for the current power-up
+
+            float angleRadians = angle * Mathf.Deg2Rad; // Convert the angle to radians
+
+            float x = Mathf.Cos(angleRadians) * radius;
+            float y = Mathf.Sin(angleRadians) * radius;
+
+            Vector3 spawnPosition = transform.position + new Vector3(x, y, 0); // Calculate the spawn position for the power-up
+
+            Instantiate(powerupPrefab, spawnPosition, Quaternion.identity); // Spawn the power-up at the calculated position
+        }
+    }
+
     Vector2 NormalizeVector(Vector2 inVector)
     {
         float magnitude = inVector.magnitude;
