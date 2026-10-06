@@ -159,6 +159,8 @@ MonoBehaviour:
   - 270
   - 315
   - 345
+  radius: 5
+  circlePosition: {x: 4, y: 3, z: 0}
 --- !u!4 &317146746
 Transform:
   m_ObjectHideFlags: 0
