@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Rocket : MonoBehaviour
 {
-    public float movementSpeed = 1.4f;
+    public float movementSpeed = 1.6f;
     private bool isLaunched = false;
     public float launchDelay = 2.5f; // Delay before the rocket launches
     private float flightTime = 0f;

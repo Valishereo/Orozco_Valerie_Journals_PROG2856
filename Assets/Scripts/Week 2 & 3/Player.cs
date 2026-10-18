@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
     public float maxSpeed = 2f;
     public float accelerationTime = 1f;
     public float decelerationTime = 5f;
+    public float angularSpeed = 180f;
     public float radarRadius = 5f; // Radius of the radar circle
     public int radarCirclePoints = 12; // Number of points to draw the radar circle
     public float powerUpRadius = 3f; // Radius for spawning power-ups
@@ -82,6 +83,8 @@ public class Player : MonoBehaviour
 
         PlayerMovement();
 
+        PlayerRotation();
+
         DetectAsteroids(radarMaxRange, asteroidTransforms);
 
         EnemyRadar(radarRadius, radarCirclePoints);
@@ -90,42 +93,46 @@ public class Player : MonoBehaviour
 
         AimRocket();
 
-     
-
+        
     }
 
     #region Player Movement
     private void PlayerMovement()
     {
-        bool isMoving = false; // Flag to check if the player is moving
+        Vector3 playerInput = Vector3.zero;
+        Keyboard keyboard = Keyboard.current;
 
         if (Keyboard.current.wKey.isPressed)
         {
-            velocity += acceleration * Time.deltaTime * Vector3.up;
-            isMoving = true;
+            playerInput += Vector3.up;
         }
 
         if (Keyboard.current.aKey.isPressed)
         {
-            velocity += acceleration * Time.deltaTime * Vector3.left;
-            isMoving = true;
+            playerInput += Vector3.left;
+            
         }
 
         if (Keyboard.current.dKey.isPressed)
         {
-            velocity += acceleration * Time.deltaTime * Vector3.right;
-            isMoving = true;
+            playerInput += Vector3.right;
+            
         }
 
         if (Keyboard.current.sKey.isPressed)
         {
-            velocity += acceleration * Time.deltaTime * Vector3.down;
-            isMoving = true;
+            playerInput += Vector3.down;
+           
         }
 
-        if (!isMoving) 
+        if (playerInput.sqrMagnitude > 0)
         {
-           float decelerationThisFrame = deceleration * Time.deltaTime;
+            velocity += acceleration * Time.deltaTime * playerInput.normalized; // Apply acceleration in the direction of the player's input
+        }
+
+        else
+        {
+            float decelerationThisFrame = deceleration * Time.deltaTime;
 
             if (velocity.magnitude <= decelerationThisFrame)
             {
@@ -143,6 +150,42 @@ public class Player : MonoBehaviour
         transform.position += velocity * Time.deltaTime;
 
         //Debug.Log(velocity.magnitude);
+    }
+
+    private void PlayerRotation ()
+    {
+        if (velocity.sqrMagnitude == 0)
+        {
+            return; 
+        }
+
+        float deltaAngle = ComputeShortestAngle(transform.up, velocity);
+
+        if (deltaAngle == 0)
+        {
+            return; 
+        }
+
+        float rotationDirection = Mathf.Sign(deltaAngle); 
+        float rotionStep = angularSpeed * Time.deltaTime;
+
+        if (rotationDirection < Mathf.Abs(deltaAngle))
+        {
+            transform.Rotate(0, 0, rotationDirection * rotionStep);
+
+        }
+        else
+        {
+            transform.Rotate(0, 0, deltaAngle);
+        }
+    }
+
+    private float ComputeShortestAngle(Vector3 a, Vector3 b)
+    {
+        float angleA = Mathf.Atan2(a.y, a.x) * Mathf.Rad2Deg;
+        float angleB = Mathf.Atan2(b.y, b.x) * Mathf.Rad2Deg;
+
+        return Mathf.DeltaAngle(angleA, angleB);
     }
 
     public void WarpPlayer(Transform target, float ratio)
