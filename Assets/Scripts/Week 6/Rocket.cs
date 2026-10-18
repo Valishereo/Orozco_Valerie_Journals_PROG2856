@@ -8,6 +8,7 @@ public class Rocket : MonoBehaviour
     private float flightTime = 0f;
     public float rotationSpeed = 90f;
     public float explosionDistance = 0.5f;
+    public GameObject explosionPrefab;
 
     public Transform enemyTransform;
 
@@ -45,9 +46,17 @@ public class Rocket : MonoBehaviour
 
             float distance = Vector3.Distance(transform.position, enemyTransform.position);
 
-            if (distance <= explosionDistance)
+            Enemy enemyScript = enemyTransform.GetComponent<Enemy>();
+
+            if (distance <= explosionDistance && !enemyScript.IsDefeated())
             {
                 Debug.Log("Enemy hit!");
+
+                GameObject explosion = Instantiate(explosionPrefab, enemyTransform.position, Quaternion.identity);
+                Destroy(explosion, 0.75f);
+
+                enemyScript.Defeat();
+
                 Destroy(gameObject);
             }
 

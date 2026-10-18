@@ -48,6 +48,8 @@ MonoBehaviour:
   movementSpeed: 1.4
   launchDelay: 2.5
   rotationSpeed: 50
+  explosionDistance: 0.5
+  explosionPrefab: {fileID: 4846570049482522864, guid: 48fb1e7c5640d0541866220e75a024bf, type: 3}
   enemyTransform: {fileID: 4504276444959460, guid: e3900e4d87ee29c43ad1d9098b51432c, type: 3}
 --- !u!1 &1819074805867038
 GameObject:
