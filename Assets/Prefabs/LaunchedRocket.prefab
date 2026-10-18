@@ -46,6 +46,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rocket
   movementSpeed: 1.4
+  launchDelay: 2.5
+  rotationSpeed: 50
+  enemyTransform: {fileID: 4504276444959460, guid: e3900e4d87ee29c43ad1d9098b51432c, type: 3}
 --- !u!1 &1819074805867038
 GameObject:
   m_ObjectHideFlags: 0

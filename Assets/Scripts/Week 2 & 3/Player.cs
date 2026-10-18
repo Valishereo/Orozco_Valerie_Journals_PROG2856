@@ -348,7 +348,8 @@ public class Player : MonoBehaviour
 
             GameObject launchedRocket = Instantiate(launchedRocketPrefab, launchPosition, launchRotation);
 
-            Rocket rocketScript = launchedRocket.GetComponent<Rocket>();
+            Rocket rocketScript = launchedRocket.GetComponent<Rocket>(); // Get the Rocket script component from the launched rocket
+            rocketScript.enemyTransform = enemyTransform; // Assign the enemyTransform to the launched rocket
             rocketScript.Launch();
 
             Debug.Log(rocketScript);
