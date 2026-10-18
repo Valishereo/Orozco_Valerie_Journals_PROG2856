@@ -4,9 +4,12 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    #region Public and Private Variables
     public Transform enemyTransform;
     public GameObject bombPrefab;
     public GameObject powerupPrefab;
+    public GameObject aimedRocketPrefab;
+    public GameObject launchedRocketPrefab;
     public List<Transform> asteroidTransforms;
     public Vector2 bombOffset;
     public float bombTrailSpacing;
@@ -24,12 +27,16 @@ public class Player : MonoBehaviour
     private float acceleration;
     private float deceleration;
     private Vector3 velocity;
+    private GameObject currentRocket;
+    private Vector3 aimDirection;
+
+    #endregion
 
     void Start()
     {
-        Debug.Log(NormalizeVector(new Vector3(3, 4)));
-        Debug.Log(NormalizeVector(new Vector3(-3, 4)));
-        Debug.Log(NormalizeVector(new Vector3(1.5f, -3.5f)));
+        //Debug.Log(NormalizeVector(new Vector3(3, 4)));
+        //Debug.Log(NormalizeVector(new Vector3(-3, 4)));
+        //Debug.Log(NormalizeVector(new Vector3(1.5f, -3.5f)));
 
         acceleration = maxSpeed / accelerationTime;
         deceleration = maxSpeed / decelerationTime;
@@ -38,29 +45,39 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Keyboard.current.bKey.wasPressedThisFrame)
+        if (Keyboard.current.eKey.wasPressedThisFrame)
         {
-            SpawnBombAtOffSet(bombOffset); // Spawn a bomb at the specified offset from the player's position when B is pressed
+            SpawnBombAtOffSet(bombOffset); // Spawn a bomb at the specified offset from the player's position when e is pressed
         }
 
-        if (Keyboard.current.tKey.wasPressedThisFrame) // It spawns a trail of bombs behind the player when T is pressed
+        if (Keyboard.current.tKey.wasPressedThisFrame) // It spawns a trail of bombs behind the player when t is pressed
         {
             SpawnBombTrail(bombTrailSpacing, numberOfTrailBombs);
         }
 
-        if (Keyboard.current.rKey.wasPressedThisFrame) // It spawns a bomb at a random corner when R is pressed
+        if (Keyboard.current.rKey.wasPressedThisFrame) // It spawns a bomb at a random corner when r is pressed
         {
             SpawnBombOnRandomCorner(3f);
         }
 
-        if (Keyboard.current.wKey.wasPressedThisFrame) // It warps the player towards the enemy when W is pressed
+        if (Keyboard.current.vKey.wasPressedThisFrame) // It warps the player towards the enemy when v is pressed
         {
             WarpPlayer(enemyTransform, warpRatio);
         }
 
-        if (Keyboard.current.pKey.wasPressedThisFrame) // It spawns power-ups in a circular pattern around the player when P is pressed
+        if (Keyboard.current.cKey.wasPressedThisFrame) // It spawns power-ups in a circular pattern around the player when c is pressed
         {
             SpawnPowerUps(powerUpRadius, numberOfPowerUps);
+        }
+        
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            SpawnRocket();
+        }
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            LaunchRocket();
         }
 
         PlayerMovement();
@@ -69,32 +86,38 @@ public class Player : MonoBehaviour
 
         EnemyRadar(radarRadius, radarCirclePoints);
 
-        
+        MouseAimingLine();
+
+        AimRocket();
+
+     
+
     }
 
-   private void PlayerMovement()
+    #region Player Movement
+    private void PlayerMovement()
     {
         bool isMoving = false; // Flag to check if the player is moving
 
-        if (Keyboard.current.upArrowKey.isPressed)
+        if (Keyboard.current.wKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.up;
             isMoving = true;
         }
 
-        if (Keyboard.current.leftArrowKey.isPressed)
+        if (Keyboard.current.aKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.left;
             isMoving = true;
         }
 
-        if (Keyboard.current.rightArrowKey.isPressed)
+        if (Keyboard.current.dKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.right;
             isMoving = true;
         }
 
-        if (Keyboard.current.downArrowKey.isPressed)
+        if (Keyboard.current.sKey.isPressed)
         {
             velocity += acceleration * Time.deltaTime * Vector3.down;
             isMoving = true;
@@ -119,9 +142,23 @@ public class Player : MonoBehaviour
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
         transform.position += velocity * Time.deltaTime;
 
-        Debug.Log(velocity.magnitude);
+        //Debug.Log(velocity.magnitude);
     }
 
+    public void WarpPlayer(Transform target, float ratio)
+    {
+        if (ratio > 1) // Ensure the ratio does not exceed 1
+        {
+            ratio = 1;
+        }
+
+        transform.position = Vector3.Lerp(transform.position, target.position, ratio); // Move the player towards the target position based on the ratio
+    }
+
+    #endregion
+
+
+    #region Bomb Spawning
     public void SpawnBombAtOffSet(Vector3 inOffset)
     {
         Vector3 playerPos = transform.position;
@@ -166,15 +203,10 @@ public class Player : MonoBehaviour
         SpawnBombAtOffSet(offset); // Spawn the bomb at the calculated offset
     }
 
-    public void WarpPlayer(Transform target, float ratio) 
-    { 
-        if (ratio > 1) // Ensure the ratio does not exceed 1
-        {
-            ratio = 1;
-        }
+    #endregion
 
-        transform.position = Vector3.Lerp(transform.position, target.position, ratio); // Move the player towards the target position based on the ratio
-    }
+
+    #region Detection and Radar
 
     public void DetectAsteroids(float inMaxRange, List <Transform> inAsteroid)
     {
@@ -193,6 +225,7 @@ public class Player : MonoBehaviour
             }
         }
     }
+
 
     public void EnemyRadar(float radius, int circlePoints)
     { 
@@ -230,6 +263,10 @@ public class Player : MonoBehaviour
 
     }
 
+    #endregion
+
+
+    #region Power-Up Spawning
     public void SpawnPowerUps(float radius, int numberOfPowerUps)
     {
         float angleStep = 360f / numberOfPowerUps; // Calculate the angle step based on the number of power-ups
@@ -249,10 +286,88 @@ public class Player : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Rocket Spawning
+
+    public void MouseAimingLine()
+    {
+        Vector2 mouseScreenPosition =Mouse.current.position.ReadValue(); 
+        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+        mouseWorldPosition.z = transform.position.z;
+
+        Vector3 direction = mouseWorldPosition - transform.position; 
+        direction = direction.normalized;
+        aimDirection = direction;
+
+        Vector3 enemyDirection = enemyTransform.position - transform.position; 
+
+        float angles = Vector3.Angle(direction, enemyDirection); // Calculate the angle between the player-to-mouse direction and the player-to-enemy direction
+
+        Color lineColor = Color.yellow; 
+        if (angles <=5f) // If the angle is less than or equal to 5 degrees, change the line color to red
+        {
+            lineColor = Color.red;
+        }
+
+        Vector3 endPosition = transform.position + direction * 3f; 
+
+        Debug.DrawLine(transform.position, endPosition, lineColor); 
+    }
+
+    public void SpawnRocket()
+    {
+        if (currentRocket == null) // Check if there is no existing rocket
+        {
+            Vector3 spawnPosition = transform.position + aimDirection * 2f;
+            currentRocket = Instantiate(aimedRocketPrefab, spawnPosition, Quaternion.identity); // Spawn a new rocket at the player's position
+        }
+    }
+
+    public void AimRocket()
+    {
+        if (currentRocket != null)
+        {
+            Vector3 rocketPosition = transform.position + aimDirection * 2f;
+            currentRocket.transform.position = rocketPosition;
+            float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg; // Calculate the angle based on the aim direction)
+            angle -= 90f; // Adjust the angle to align with the rocket's orientation
+            currentRocket.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        }
+
+    }
+
+    public void LaunchRocket()
+    {
+        if (currentRocket != null)
+        {
+            Vector3 launchPosition = currentRocket.transform.position;
+            Quaternion launchRotation = currentRocket.transform.rotation;
+
+            //Instantiate(launchedRocketPrefab, launchPosition, launchRotation);
+
+            GameObject launchedRocket = Instantiate(launchedRocketPrefab, launchPosition, launchRotation);
+
+            Rocket rocketScript = launchedRocket.GetComponent<Rocket>();
+            rocketScript.Launch();
+
+            Debug.Log(rocketScript);
+
+            Destroy(currentRocket);
+            currentRocket = null;
+        }
+
+    }
+    #endregion
+
+    #region Utility Functions
     Vector2 NormalizeVector(Vector2 inVector)
     {
         float magnitude = inVector.magnitude;
         Vector2 outVector = new Vector2(inVector.x / magnitude, inVector.y / magnitude);
         return outVector;
     }
+
+    #endregion
+
 }
