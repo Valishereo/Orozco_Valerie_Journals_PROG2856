@@ -11,7 +11,7 @@ public class AngularVelocityTest : MonoBehaviour
         rb.angularVelocity = angularVelocity;
     }
 
-    // Update is called once per frame
+    // Update is called once per frame 
     void Update()
     {
         
